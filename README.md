@@ -1,7 +1,7 @@
 
 
 <div align="center">
-  <img src="public/screenshot.png" alt="Descripto App" width="350"/>
+  <img src="public/logo.png" alt="Descripto Logo" width="120"/>
   <h1>📝 Descripto</h1>
   <p><b>Genera descripciones irresistibles para productos artesanales con IA</b></p>
   <p>

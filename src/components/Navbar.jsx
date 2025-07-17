@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 export default function Navbar() {
   return (
     <nav className="bg-white shadow flex justify-between items-center px-8 py-4 rounded-b-2xl border-b border-gray-200">
-      <div className="font-extrabold text-2xl text-green-700 tracking-wide">
+      <div className="flex items-center gap-3 font-extrabold text-2xl text-green-700 tracking-wide">
+        <img src="/logo.png" alt="Logo Descripto" className="h-10 w-10 rounded-full shadow" />
         <Link to="/">Descripto</Link>
       </div>
       <div className="space-x-6">
