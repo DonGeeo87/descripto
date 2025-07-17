@@ -1,7 +1,7 @@
 
 
 <div align="center">
-  <img src="public/logo.png" alt="Descripto Logo" width="120"/>
+  <img src="https://res.cloudinary.com/dirzzzy50/image/upload/v1752723426/logo_ixdoiz.png" alt="Descripto Logo" width="120"/>
   <h1>📝 Descripto</h1>
   <p><b>Genera descripciones irresistibles para productos artesanales con IA</b></p>
   <p>
