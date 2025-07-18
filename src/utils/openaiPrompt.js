@@ -4,12 +4,29 @@ const GEMINI_API_KEY = "AIzaSyDgfTjUDl98FaqJASMmJSRpluwdeGYhOb4";
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 export function generarPromptProducto({ nombre, imagen, tecnica, material }) {
-  // Prompt acotado: solo una descripción detallada
-  let prompt = `Actúa como un redactor profesional de Amazon especializado en productos artesanales. Escribe una descripción genial y detallada para un producto llamado "${nombre}". El texto debe tener:\n\n- Un párrafo introductorio que destaque el valor, origen o historia del producto.\n- Un listado de características o beneficios principales, usando viñetas o puntos destacados con **negritas**.\n- Un párrafo de cierre con un llamado a la acción sutil y persuasivo.\n\nInformación del producto:\n- Técnica de fabricación: ${tecnica}\n- Material: ${material}\n- Imagen incluida: ${imagen ? "sí" : "no"}`;
+  // Prompt más específico y directo
+  let prompt = `Genera contenido para el producto "${nombre}" con EXACTAMENTE esta estructura (no cambies los títulos):
+
+**DESCRIPCIÓN DEL PRODUCTO:**
+[Escribe una descripción comercial de 2-3 párrafos cortos, máximo 150 palabras]
+
+**CAPTION PARA INSTAGRAM:**
+[Escribe un caption atractivo para Instagram de 1-2 párrafos, con emojis y hashtags, máximo 120 palabras]
+
+**CAPTION PARA FACEBOOK:**
+[Escribe un caption para Facebook de 2-3 párrafos, máximo 180 palabras]
+
+Información del producto:
+- Técnica: ${tecnica}
+- Material: ${material}
+- Incluye imagen: ${imagen ? "sí" : "no"}
+
+IMPORTANTE: Debes incluir las 3 secciones con los títulos exactos.`;
+
   if (imagen) {
-    prompt += `\nAnaliza la siguiente imagen del producto y complementa la descripción con detalles visuales relevantes, como colores, formas, estilo, o cualquier característica que puedas observar. Si la imagen no es clara, ignora este paso.`;
+    prompt += `\n\nAnaliza la imagen y menciona 1-2 detalles visuales en la descripción.`;
   }
-  prompt += `\nNo agregues captions ni textos para redes sociales. No uses guiones ni numeración. Usa un estilo profesional, humano y auténtico.`;
+
   return prompt;
 }
 
@@ -19,18 +36,18 @@ export function generarPromptServicio({ nombre, descripcion }) {
 }
 
 // Función para llamar a Gemini API y formatear la respuesta
-// Ahora acepta un segundo parámetro opcional: imageBase64
 export async function generarConGemini(prompt, imageBase64 = null) {
   let parts = [{ text: prompt }];
+  
   if (imageBase64) {
-    // Gemini espera imágenes como objetos { inlineData: { mimeType, data } }
     parts.push({
       inlineData: {
-        mimeType: "image/jpeg", // O image/png según el origen
+        mimeType: "image/jpeg",
         data: imageBase64.replace(/^data:image\/(jpeg|png);base64,/, "")
       }
     });
   }
+
   const body = {
     contents: [
       {
@@ -38,28 +55,85 @@ export async function generarConGemini(prompt, imageBase64 = null) {
       }
     ],
     generationConfig: {
-      maxOutputTokens: 400 // Limita la respuesta para no exceder tokens
+      maxOutputTokens: 1200, // Aumentado para asegurar respuestas completas
+      temperature: 0.5, // Reducido para mayor consistencia
+      topP: 0.95, // Aumentado para mejor calidad
+      topK: 60, // Aumentado para más opciones
     }
   };
-  const res = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
-  if (!res.ok) throw new Error("Error al llamar a Gemini API");
-  const data = await res.json();
-  let texto = data?.candidates?.[0]?.content?.parts?.[0]?.text || "No se pudo generar contenido.";
-  // Limita la longitud de la respuesta (por si acaso)
-  if (texto.length > 1500) texto = texto.slice(0, 1500) + "...";
-  // Formatea: separa en renglones por opciones y saltos de línea
-  texto = texto
-    .replace(/\*\*Opción/g, '\n\n**Opción')
-    .replace(/\*\*\[/g, '\n\n**[')
-    .replace(/\*\*Al adaptar/g, '\n\n**Al adaptar')
-    .replace(/\*\*/g, '\n**')
-    .replace(/>/g, '\n>')
-    .replace(/\n{2,}/g, '\n\n');
-  return texto.trim();
+
+  try {
+    const res = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(`Error API: ${errorData.error?.message || res.statusText}`);
+    }
+
+    const data = await res.json();
+    let texto = data?.candidates?.[0]?.content?.parts?.[0]?.text || "No se pudo generar contenido.";
+    
+    // Limpia y formatea el texto
+    texto = limpiarYFormatearTexto(texto);
+    
+    // Verifica que tenga las 3 secciones y las agrega si faltan
+    texto = verificarYCompletarSecciones(texto);
+    
+    return texto.trim();
+  } catch (error) {
+    console.error('Error en generarConGemini:', error);
+    throw new Error(`Error al generar contenido: ${error.message}`);
+  }
+}
+
+// Función para limpiar y formatear el texto
+function limpiarYFormatearTexto(texto) {
+  return texto
+    // Limpia caracteres extraños
+    .replace(/[🔲🔳⬜⬛]/g, '')
+    .replace(/[□■▢▣▤▥▦▧▨▩]/g, '')
+    .replace(/[▪▫]/g, '')
+    
+    // Formatea los títulos
+    .replace(/\*\*DESCRIPCIÓN DEL PRODUCTO:\*\*/g, '\n\n## 📝 DESCRIPCIÓN DEL PRODUCTO\n')
+    .replace(/\*\*CAPTION PARA INSTAGRAM:\*\*/g, '\n\n## 📱 CAPTION PARA INSTAGRAM\n')
+    .replace(/\*\*CAPTION PARA FACEBOOK:\*\*/g, '\n\n## 👥 CAPTION PARA FACEBOOK\n')
+    
+    // Limpia formato de markdown extra
+    .replace(/\*\*/g, '**')
+    .replace(/\n{3,}/g, '\n\n')
+    
+    // Asegura que no haya texto cortado
+    .replace(/([a-zA-Z])\s*\.\.\.$/, '$1.')
+    .replace(/([a-zA-Z])\s*\.\.\.\s*$/, '$1.');
+}
+
+// Función para verificar y completar secciones faltantes
+function verificarYCompletarSecciones(texto) {
+  const tieneDescripcion = texto.includes('DESCRIPCIÓN DEL PRODUCTO');
+  const tieneInstagram = texto.includes('CAPTION PARA INSTAGRAM');
+  const tieneFacebook = texto.includes('CAPTION PARA FACEBOOK');
+  
+  let textoCompleto = texto;
+  
+  // Si falta alguna sección, la agrega con contenido por defecto
+  if (!tieneDescripcion) {
+    textoCompleto += '\n\n## 📝 DESCRIPCIÓN DEL PRODUCTO\n\nDescripción del producto generada automáticamente.';
+  }
+  
+  if (!tieneInstagram) {
+    textoCompleto += '\n\n## 📱 CAPTION PARA INSTAGRAM\n\nCaption para Instagram generado automáticamente.';
+  }
+  
+  if (!tieneFacebook) {
+    textoCompleto += '\n\n## 👥 CAPTION PARA FACEBOOK\n\nCaption para Facebook generado automáticamente.';
+  }
+  
+  return textoCompleto;
 }
