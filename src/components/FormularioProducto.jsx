@@ -24,12 +24,44 @@ export default function FormularioProducto() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        setNotification({
+          message: "Por favor selecciona un archivo de imagen válido",
+          type: "error"
+        });
+        return;
+      }
+
+      // Validar tamaño (máximo 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        setNotification({
+          message: "La imagen es demasiado grande. Máximo 10MB",
+          type: "error"
+        });
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setImage(reader.result);
+        setNotification({
+          message: "Imagen cargada correctamente",
+          type: "success"
+        });
+      };
+      reader.onerror = () => {
+        setNotification({
+          message: "Error al cargar la imagen. Intenta nuevamente",
+          type: "error"
+        });
       };
       reader.readAsDataURL(file);
     }
+    
+    // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
+    e.target.value = '';
   };
 
   const handleSubmit = async (e) => {
@@ -117,7 +149,43 @@ export default function FormularioProducto() {
         </div>
 
         {/* Botones de Imagen */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="mb-4">
+          <label className="block mb-3 font-bold text-white text-lg flex items-center">
+            <svg className="w-5 h-5 mr-2 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Imagen del Producto
+          </label>
+          <p className="text-white/60 text-sm mb-4">Selecciona una imagen desde tu galería o toma una foto con la cámara</p>
+          <div className="md:hidden mb-4 p-3 bg-blue-500/20 border border-blue-300/30 rounded-xl">
+            <p className="text-blue-200 text-xs">
+              💡 <strong>En móviles:</strong> Usa "Galería" para seleccionar una foto existente o "Cámara" para tomar una nueva foto
+            </p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {/* Seleccionar desde galería */}
+          <label className="group cursor-pointer">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+              id="input-file-upload"
+            />
+            <div className="glass rounded-2xl p-4 text-center hover-lift border-2 border-white/20 transition-all duration-300 group-hover:border-purple-400">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <span className="text-white font-bold text-sm">Galería</span>
+              <p className="text-white/60 text-xs mt-1">Seleccionar imagen</p>
+            </div>
+          </label>
+
+          {/* Capturar con cámara */}
           <label className="group cursor-pointer">
             <input
               type="file"
@@ -125,33 +193,35 @@ export default function FormularioProducto() {
               capture="environment"
               onChange={handleFileChange}
               className="hidden"
-              id="input-file-upload"
+              id="input-camera-upload"
             />
-            <div className="glass rounded-2xl p-6 text-center hover-lift border-2 border-white/20 transition-all duration-300 group-hover:border-purple-400">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            <div className="glass rounded-2xl p-4 text-center hover-lift border-2 border-white/20 transition-all duration-300 group-hover:border-green-400">
+              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <span className="text-white font-bold text-lg">Seleccionar Imagen</span>
-              <p className="text-white/60 text-sm mt-2">Sube una foto desde tu dispositivo</p>
+              <span className="text-white font-bold text-sm">Cámara</span>
+              <p className="text-white/60 text-xs mt-1">Tomar foto</p>
             </div>
           </label>
 
+          {/* Webcam (solo desktop) */}
           <button
             type="button"
-            className="glass rounded-2xl p-6 text-center hover-lift border-2 border-white/20 transition-all duration-300 hover:border-purple-400 group"
+            className="glass rounded-2xl p-4 text-center hover-lift border-2 border-white/20 transition-all duration-300 hover:border-purple-400 group hidden md:block"
             onClick={() => setShowWebcam((v) => !v)}
           >
-            <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
             </div>
-            <span className="text-white font-bold text-lg">
-              {showWebcam ? "Cerrar Cámara" : "Usar Cámara"}
+            <span className="text-white font-bold text-sm">
+              {showWebcam ? "Cerrar" : "Webcam"}
             </span>
-            <p className="text-white/60 text-sm mt-2">Captura una foto con tu cámara</p>
+            <p className="text-white/60 text-xs mt-1">Cámara web</p>
           </button>
         </div>
 
