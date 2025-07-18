@@ -257,6 +257,7 @@ export default function FormularioProducto() {
                 src={image} 
                 alt="preview" 
                 className="w-48 h-48 object-cover rounded-2xl border-2 border-purple-300 shadow-2xl group-hover:scale-105 transition-transform duration-300" 
+                onError={e => { e.target.onerror = null; e.target.src = '/logo.png'; }}
               />
               <button
                 type="button"

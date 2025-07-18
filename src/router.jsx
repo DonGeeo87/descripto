@@ -1,7 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Home from './pages/Home';
 import Resultados from './pages/Resultados';
-
+import ErrorElement from './components/ErrorElement';
 
 const router = createBrowserRouter(
   [
@@ -10,6 +10,7 @@ const router = createBrowserRouter(
   ],
   {
     basename: import.meta.env.BASE_URL,
+    errorElement: <ErrorElement />,
   }
 );
 
