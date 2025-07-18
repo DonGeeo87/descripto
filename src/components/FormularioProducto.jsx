@@ -185,7 +185,7 @@ export default function FormularioProducto() {
             </div>
           </label>
 
-          {/* Capturar con cámara */}
+          {/* Capturar con cámara trasera */}
           <label className="group cursor-pointer">
             <input
               type="file"
@@ -202,8 +202,29 @@ export default function FormularioProducto() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <span className="text-white font-bold text-sm">Cámara</span>
+              <span className="text-white font-bold text-sm">Cámara Trasera</span>
               <p className="text-white/60 text-xs mt-1">Tomar foto</p>
+            </div>
+          </label>
+
+          {/* Capturar con cámara frontal */}
+          <label className="group cursor-pointer">
+            <input
+              type="file"
+              accept="image/*"
+              capture="user"
+              onChange={handleFileChange}
+              className="hidden"
+              id="input-camera-front-upload"
+            />
+            <div className="glass rounded-2xl p-4 text-center hover-lift border-2 border-white/20 transition-all duration-300 group-hover:border-pink-400">
+              <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <span className="text-white font-bold text-sm">Cámara Frontal</span>
+              <p className="text-white/60 text-xs mt-1">Selfie</p>
             </div>
           </label>
 
